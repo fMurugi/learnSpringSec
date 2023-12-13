@@ -20,13 +20,13 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Component
 @RequiredArgsConstructor
 public class JwtAthFilter extends OncePerRequestFilter {
-    private UserDao userDao;
-    private  JwtUtil jwtUtil;
+    private final UserDao userDao;
+    private  final JwtUtil jwtUtil;
 
-    public JwtAthFilter(UserDao userDao, JwtUtil jwtUtil) {
-        this.userDao = userDao;
-        this.jwtUtil = jwtUtil;
-    }
+    // public JwtAthFilter(UserDao userDao, JwtUtil jwtUtil) {
+    //     this.userDao = userDao;
+    //     this.jwtUtil = jwtUtil;
+    // }
 
 
 
@@ -49,6 +49,7 @@ public class JwtAthFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
         filterChain.doFilter(request,response);

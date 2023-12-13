@@ -29,6 +29,7 @@ public class UserDao {
     );
 
     public UserDetails findUserByEmail(String email){
+
         return APPLICATION_USERS
                 .stream()
                 .filter(u -> u.getUsername().equals(email))

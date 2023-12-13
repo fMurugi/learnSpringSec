@@ -38,10 +38,10 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig  {
-    @Autowired
-    private  JwtAthFilter jwtAuhtFilter;
-    @Autowired
-    private UserDao userDao;
+    
+    private final JwtAthFilter jwtAuhtFilter;
+    
+    private final UserDao userDao;
 
 
     private static final String[] WHITE_LIST_URL ={"/api/v1/auth/**","/api/v1/auth/authenticate","/swagger-resources",
@@ -52,21 +52,23 @@ public class SecurityConfig  {
         "/webjars/**",
         "/swagger-ui.html"};
 
-    public SecurityConfig(JwtAthFilter jwtAuhtFilter, UserDao userDao) {
-        this.jwtAuhtFilter = jwtAuhtFilter;
-        this.userDao = userDao;
-    }
+    // public SecurityConfig(JwtAthFilter jwtAuhtFilter, UserDao userDao) {
+    //     this.jwtAuhtFilter = jwtAuhtFilter;
+    //     this.userDao = userDao;
+    // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http ) throws Exception{
-       http
+       http     
+                .csrf(csrf->csrf.disable())
+                .sessionManagement(session-> session.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())
 
-                .sessionManagement(session-> session.sessionCreationPolicy(STATELESS))
+                
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuhtFilter, UsernamePasswordAuthenticationFilter.class)
                .exceptionHandling().authenticationEntryPoint((request,response,authException) -> {
@@ -83,7 +85,7 @@ public class SecurityConfig  {
 
     @Bean
     public AuthenticationProvider authenticationProvider(){
-        final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider authenticationProvider  =  new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
