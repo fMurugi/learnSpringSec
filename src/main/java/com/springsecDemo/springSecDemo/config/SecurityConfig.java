@@ -20,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,6 +30,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -41,10 +43,10 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig  {
     
     private final  JwtAthFilter jwtAuhtFilter;
+    private final LogoutHandler logoutHandler;
     
 //    private final  UserDao userDao;
-    private final ApplicationConfig applicationConfig;
-
+    private final AuthenticationProvider authenticationProvider;
     private static final String[] WHITE_LIST_URL ={"/api/v1/auth/**","/swagger-resources",
         "/swagger-resources/**",
         "/configuration/ui",
@@ -68,12 +70,18 @@ public class SecurityConfig  {
                                 .authenticated())
 
                 
-                .authenticationProvider(applicationConfig.authenticationProvider())
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuhtFilter, UsernamePasswordAuthenticationFilter.class)
+               .logout()
+               .logoutUrl("/api/v1/auth/logout")
+               .addLogoutHandler(logoutHandler)
+               .logoutSuccessHandler((request,response,authentication)-> SecurityContextHolder.clearContext())
+               .and()
                .exceptionHandling().authenticationEntryPoint((request,response,authException) -> response.sendError(
                        HttpServletResponse.SC_UNAUTHORIZED,
                        authException.getMessage()
                ))
+
                ;
         return http.build();
     }

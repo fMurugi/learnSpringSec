@@ -37,4 +37,9 @@ private final AuthenticationService authenticationService;
     ){
         return ResponseEntity.ok(authenticationService.register(request));
     }
+
+//    @PostMapping("/logout")
+//    public ResponseEntity<String> logout(){
+//
+//    }
 }

@@ -1,6 +1,7 @@
 package com.springsecDemo.springSecDemo.config;
 
 import com.springsecDemo.springSecDemo.dao.UserDao;
+import com.springsecDemo.springSecDemo.token.TokenRepository;
 import com.springsecDemo.springSecDemo.user.User;
 import com.springsecDemo.springSecDemo.user.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -29,6 +30,7 @@ public class JwtAthFilter extends OncePerRequestFilter {
     private  final JwtUtil jwtUtil;
 //    private final UserRepository userRepository;
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(
@@ -60,7 +62,10 @@ public class JwtAthFilter extends OncePerRequestFilter {
 
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null){
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-            if(jwtUtil.validateToken(jwtToken,userDetails)){
+            var isTokenValid = tokenRepository.findByToken(jwtToken)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
+            if(jwtUtil.validateToken(jwtToken,userDetails) && isTokenValid){
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
