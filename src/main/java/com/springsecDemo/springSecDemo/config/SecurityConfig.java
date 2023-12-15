@@ -2,6 +2,7 @@ package com.springsecDemo.springSecDemo.config;
 
 import com.springsecDemo.springSecDemo.dao.UserDao;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,12 +40,12 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class SecurityConfig  {
     
-    private final JwtAthFilter jwtAuhtFilter;
+    private final  JwtAthFilter jwtAuhtFilter;
     
-    private final UserDao userDao;
+//    private final  UserDao userDao;
+    private final ApplicationConfig applicationConfig;
 
-
-    private static final String[] WHITE_LIST_URL ={"/api/v1/auth/**","/api/v1/auth/authenticate","/swagger-resources",
+    private static final String[] WHITE_LIST_URL ={"/api/v1/auth/**","/swagger-resources",
         "/swagger-resources/**",
         "/configuration/ui",
         "/configuration/security",
@@ -52,10 +53,8 @@ public class SecurityConfig  {
         "/webjars/**",
         "/swagger-ui.html"};
 
-    // public SecurityConfig(JwtAthFilter jwtAuhtFilter, UserDao userDao) {
-    //     this.jwtAuhtFilter = jwtAuhtFilter;
-    //     this.userDao = userDao;
-    // }
+
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http ) throws Exception{
@@ -69,48 +68,32 @@ public class SecurityConfig  {
                                 .authenticated())
 
                 
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(applicationConfig.authenticationProvider())
                 .addFilterBefore(jwtAuhtFilter, UsernamePasswordAuthenticationFilter.class)
-               .exceptionHandling().authenticationEntryPoint((request,response,authException) -> {
-                   response.sendError(
-                           HttpServletResponse.SC_UNAUTHORIZED,
-                           authException.getMessage()
-                   );
-               })
+               .exceptionHandling().authenticationEntryPoint((request,response,authException) -> response.sendError(
+                       HttpServletResponse.SC_UNAUTHORIZED,
+                       authException.getMessage()
+               ))
                ;
         return http.build();
     }
 
 
 
-    @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authenticationProvider  =  new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
 
-    }
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-        return NoOpPasswordEncoder.getInstance();
-    }
 
-    @Bean
-    public UserDetailsService userDetailsService(){
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-                return userDao.findUserByEmail(email);
-            }
-        };
-    }
+
+
+//    @Bean
+//    public UserDetailsService userDetailsService(){
+//        return new UserDetailsService() {
+//            @Override
+//            public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+//                return userDao.findUserByEmail(email);
+//            }
+//        };
+//    }
 
 
 //    @Override

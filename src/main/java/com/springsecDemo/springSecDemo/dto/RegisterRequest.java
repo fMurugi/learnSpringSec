@@ -1,17 +1,15 @@
 package com.springsecDemo.springSecDemo.dto;
 
-import jakarta.websocket.server.ServerEndpoint;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationRequest {
+public class RegisterRequest {
+    private String firstname;
+    private String lastname;
     private String email;
     private String password;
-
 }
